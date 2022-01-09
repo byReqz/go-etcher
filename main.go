@@ -47,31 +47,7 @@ func GetDest() string {
 	return dest
 }
 
-func ReadImage(path string) ([]byte, error) {
-	readfile, err := os.Open(path)
-	if err != nil {
-		return make([]byte, 0), err
-	}
-	bar := progressbar.DefaultBytes(
-  	  -1,
-    	"Reading file",
-	)
-	content, err := io.ReadAll(io.TeeReader(readfile, bar))
-	if err != nil {
-		return make([]byte, 0), err
-	}
-	return content, err
-}
-
-func WriteImage(path string, destination string, size int64) (int64, error) {
-	image, err := os.Open(path)
-	if err != nil {
-		return 0, err
-	}
-	target, err := os.OpenFile(destination, os.O_RDWR, 0660)
-	if err != nil {
-		return 0, err
-	}
+func WriteImage(image *os.File, target *os.File, size int64) (int64, error) {
 	bar := progressbar.DefaultBytes(
   	  size,
     	"Writing image",
@@ -82,6 +58,26 @@ func WriteImage(path string, destination string, size int64) (int64, error) {
 		return 0, err
 	}
 	return written, err
+}
+
+func Sync(image *os.File, target *os.File) error {
+	err := image.Sync()
+	if err != nil {
+		return err
+	}
+	err = target.Sync()
+	if err != nil {
+		return err
+	}
+	err = image.Close()
+	if err != nil {
+		return err
+	}
+	err = target.Close()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func main() {
@@ -104,7 +100,26 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Getting file details                     ")
 	}
-	written, err := WriteImage(path, dest, stat.Size())
+	s.Prefix = "[ "
+	s.Suffix = " ]  Opening files"
+	s.Start()
+	image, err := os.Open(path)
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		log.Fatal(err)
+	}
+	target, err := os.OpenFile(dest, os.O_RDWR, 0660)
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		log.Fatal(err)
+	} else {
+		s.Stop()
+		fmt.Println("\r[", color.GreenString("✓"), "]  Opening files                 ")
+	}
+
+	written, err := WriteImage(image, target, stat.Size())
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written")
@@ -112,5 +127,18 @@ func main() {
 	} else {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Writing image,", written, "bytes written")
+	}
+
+	s.Prefix = "[ "
+	s.Suffix = " ]  Syncing"
+	s.Start()
+	Sync(image, target)
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Syncing                    ")
+		log.Fatal(err)
+	} else {
+		s.Stop()
+		fmt.Println("\r[", color.GreenString("✓"), "]  Syncing                  ")
 	}
 }
