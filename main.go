@@ -82,14 +82,14 @@ func Sync(image *os.File, target *os.File) error {
 
 func main() {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
-	s.Prefix = "[ "
-	s.Suffix = " ]  Getting file details"
-	// s.Start()	
 
 	// if not given via arg
 	path := GetPath()
 	// if not given via arg
 	dest := GetDest()
+
+	s.Prefix = "[ "
+	s.Suffix = " ]  Getting file details"
 	s.Start()
 	stat, err := os.Stat(path)
 	if err != nil {
@@ -100,6 +100,7 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Getting file details                     ")
 	}
+
 	s.Prefix = "[ "
 	s.Suffix = " ]  Opening files"
 	s.Start()
@@ -132,7 +133,7 @@ func main() {
 	s.Prefix = "[ "
 	s.Suffix = " ]  Syncing"
 	s.Start()
-	Sync(image, target)
+	err = Sync(image, target)
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Syncing                    ")
