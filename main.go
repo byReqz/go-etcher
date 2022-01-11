@@ -9,10 +9,22 @@ import (
 	"github.com/schollz/progressbar/v3"
 	"github.com/fatih/color"
 	"github.com/briandowns/spinner"
+	flag "github.com/spf13/pflag"
 )
 
+var device string
+var input string
+var force bool
+
+func init() {
+	flag.StringVarP(&device, "device", "d", "", "target device")
+	flag.StringVarP(&input, "input", "i", "", "input file")
+	flag.BoolVarP(&force, "force", "f", false, "override safety features")
+	flag.Parse()
+}
+
 func GetPath() string {
-	fmt.Print("Path to image: ")
+	fmt.Print("[ ", color.YellowString("i"), " ]  Please input your image file: ")
 	var path string
 	_, err := fmt.Scanln(&path)
 	if err != nil {
@@ -30,7 +42,7 @@ func GetPath() string {
 }
 
 func GetDest() string {
-	fmt.Print("Path to Destination: ")
+	fmt.Print("[ ", color.YellowString("i"), " ]  Please input destination: ")
 	var dest string
 	_, err := fmt.Scanln(&dest)
 	if err != nil {
@@ -83,15 +95,18 @@ func Sync(image *os.File, target *os.File) error {
 func main() {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 
-	// if not given via arg
-	path := GetPath()
-	// if not given via arg
-	dest := GetDest()
+	if input == "" {
+		input = GetPath()
+	}
+
+	if device == "" {
+		device = GetDest()
+	}
 
 	s.Prefix = "[ "
 	s.Suffix = " ]  Getting file details"
 	s.Start()
-	stat, err := os.Stat(path)
+	stat, err := os.Stat(input)
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
@@ -104,13 +119,13 @@ func main() {
 	s.Prefix = "[ "
 	s.Suffix = " ]  Opening files"
 	s.Start()
-	image, err := os.Open(path)
+	image, err := os.Open(input)
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
 		log.Fatal(err)
 	}
-	target, err := os.OpenFile(dest, os.O_RDWR, 0660)
+	target, err := os.OpenFile(device, os.O_RDWR, 0660)
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
