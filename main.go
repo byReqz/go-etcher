@@ -96,11 +96,23 @@ func main() {
 	s := spinner.New(spinner.CharSets[14], 100*time.Millisecond)
 
 	if input == "" {
-		input = GetPath()
+		if len(flag.Args()) == 0 {
+			input = GetPath()
+		} else if len(flag.Args()) > 0 {
+			input = flag.Args()[0]
+		}
 	}
 
 	if device == "" {
-		device = GetDest()
+		if len(flag.Args()) == 0 {
+			device = GetDest()
+		} else if len(flag.Args()) > 0 {
+			if input == flag.Args()[0] && len(flag.Args()) > 1 {
+				device = flag.Args()[1]
+			}	else if input != flag.Args()[0] && len(flag.Args()) > 0 {
+				device = flag.Args()[0]
+			}
+		}
 	}
 
 	s.Prefix = "[ "
