@@ -60,10 +60,19 @@ func GetDest() string {
 }
 
 func WriteImage(image *os.File, target *os.File, size int64) (int64, error) {
-	bar := progressbar.DefaultBytes(
-  	  size,
-    	"Writing image",
-	)
+	bar := progressbar.NewOptions(int(size),
+		progressbar.OptionSetWriter(os.Stderr),
+		// progressbar.OptionEnableColorCodes(true),
+		progressbar.OptionShowBytes(true),
+		progressbar.OptionSetWidth(50),
+		progressbar.OptionSetDescription("Writing image file..."),
+		progressbar.OptionSetTheme(progressbar.Theme{
+			Saucer:        "=",
+			SaucerHead:    ">",
+			SaucerPadding: " ",
+			BarStart:      "[",
+			BarEnd:        "]",
+		}))
 	writer := io.MultiWriter(target, bar)
 	written, err := io.Copy(writer, image)
 	if err != nil {
@@ -147,14 +156,22 @@ func main() {
 		fmt.Println("\r[", color.GreenString("✓"), "]  Opening files                 ")
 	}
 
+	fmt.Println("[", color.BlueString("i"), "]  Input device/file:", input)
+	fmt.Println("[", color.BlueString("i"), "]  Output device/file:", device)
+	fmt.Print(color.HiWhiteString("Do you want to continue? [y/N]: "))
+	var yesno string
+	_, _ = fmt.Scanln(&yesno)
+	yesno = strings.TrimSpace(yesno)
+	if ! (yesno == "y" || yesno == "Y") {
+		log.Fatal("aborted")
+	}
+
 	written, err := WriteImage(image, target, stat.Size())
 	if err != nil {
-		s.Stop()
-		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written")
+		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written                                                    ")
 		log.Fatal(err)
 	} else {
-		s.Stop()
-		fmt.Println("\r[", color.GreenString("✓"), "]  Writing image,", written, "bytes written")
+		fmt.Println("\r[", color.GreenString("✓"), "]  Writing image,", written, "bytes written                                                   ")
 	}
 
 	s.Prefix = "[ "
