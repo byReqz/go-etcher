@@ -37,6 +37,10 @@ func GetPath() string {
 		}
 		return homedir + path[1:]
 	}
+	if path == "" {
+		fmt.Println("[", color.RedString("!"), "]  No image given, retrying.")
+		path = GetPath()
+	}
 	return path
 }
 
@@ -52,6 +56,10 @@ func GetDest() string {
 			log.Fatal(err)
 		}
 		return homedir + dest[1:]
+	}
+	if dest == "" {
+		fmt.Println("[", color.RedString("!"), "]  No destination given, retrying.")
+		dest = GetDest()
 	}
 	return dest
 }
