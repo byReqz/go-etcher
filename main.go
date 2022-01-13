@@ -131,7 +131,8 @@ func main() {
 	s.Prefix = "[ "
 	s.Suffix = " ]  Getting file details"
 	s.Start()
-	stat, err := os.Stat(input)
+	statinput, err := os.Stat(input)
+	statdevice, err := os.Stat(device)
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
@@ -159,9 +160,13 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Opening files                 ")
 	}
-
-	fmt.Println("[", color.BlueString("i"), "]  Input device/file:", input)
-	fmt.Println("[", color.BlueString("i"), "]  Output device/file:", device)
+	inputmb := fmt.Sprint("[", statinput.Size() / 1024 / 1024, "MB]")
+	devicemb := fmt.Sprint("[", statdevice.Size() / 1024 / 1024, "MB]")
+	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb)
+	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb)
+	if statinput.Size() > statdevice.Size() {
+		fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
+	}
 	fmt.Print(color.HiWhiteString("Do you want to continue? [y/N]: "))
 	var yesno string
 	_, _ = fmt.Scanln(&yesno)
@@ -170,7 +175,7 @@ func main() {
 		log.Fatal("aborted")
 	}
 
-	written, err := WriteImage(image, target, stat.Size())
+	written, err := WriteImage(image, target, statinput.Size())
 	if err != nil {
 		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written                                                    ")
 		log.Fatal(err)
