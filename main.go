@@ -64,7 +64,7 @@ func WriteImage(image *os.File, target *os.File, size int64) (int64, error) {
 		progressbar.OptionSetWriter(os.Stderr),
 		// progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionShowBytes(true),
-		progressbar.OptionSetWidth(50),
+		progressbar.OptionSetWidth(25),
 		progressbar.OptionSetDescription("Writing image file..."),
 		progressbar.OptionSetTheme(progressbar.Theme{
 			Saucer:        "=",
