@@ -10,6 +10,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/briandowns/spinner"
 	flag "github.com/spf13/pflag"
+	ac "github.com/JoaoDanielRufino/go-input-autocomplete"
 )
 
 var device string
@@ -24,9 +25,7 @@ func init() {
 }
 
 func GetPath() string {
-	fmt.Print("[ ", color.YellowString("i"), " ]  Please input your image file: ")
-	var path string
-	_, err := fmt.Scanln(&path)
+	path, err := ac.Read("[ " + color.YellowString("i") + " ]  Please input your image file: ")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -42,9 +41,7 @@ func GetPath() string {
 }
 
 func GetDest() string {
-	fmt.Print("[ ", color.YellowString("i"), " ]  Please input destination: ")
-	var dest string
-	_, err := fmt.Scanln(&dest)
+	dest, err := ac.Read("[ " + color.YellowString("i") + " ]  Please input destination: ")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -62,7 +59,6 @@ func GetDest() string {
 func WriteImage(image *os.File, target *os.File, size int64) (int64, error) {
 	bar := progressbar.NewOptions(int(size),
 		progressbar.OptionSetWriter(os.Stderr),
-		// progressbar.OptionEnableColorCodes(true),
 		progressbar.OptionShowBytes(true),
 		progressbar.OptionSetWidth(25),
 		progressbar.OptionSetDescription("Writing image file..."),
