@@ -146,12 +146,19 @@ func main() {
 	s.Suffix = " ]  Opening files"
 	s.Start()
 	image, err := os.Open(input)
-	if err != nil {
-		s.Stop()
-		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
-		log.Fatal(err)
+	var inputsize int64
+	if statinput.Size() != 0 {
+		inputsize = statinput.Size()
+	} else {
+		inputsize, err = image.Seek(0, io.SeekEnd)
 	}
 	target, err := os.OpenFile(device, os.O_RDWR, 0660)
+	var targetsize int64
+	if statdevice.Size() != 0 {
+		targetsize = statdevice.Size()
+	} else {
+		targetsize, err = target.Seek(0, io.SeekEnd)
+	}
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
@@ -160,8 +167,8 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Opening files                 ")
 	}
-	inputmb := fmt.Sprint("[", statinput.Size() / 1024 / 1024, "MB]")
-	devicemb := fmt.Sprint("[", statdevice.Size() / 1024 / 1024, "MB]")
+	inputmb := fmt.Sprint("[", inputsize / 1024 / 1024, "MB]")
+	devicemb := fmt.Sprint("[", targetsize / 1024 / 1024, "MB]")
 	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb)
 	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb)
 	if statinput.Size() > statdevice.Size() {
@@ -175,7 +182,7 @@ func main() {
 		log.Fatal("aborted")
 	}
 
-	written, err := WriteImage(image, target, statinput.Size())
+	written, err := WriteImage(image, target, inputsize)
 	if err != nil {
 		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written                                                    ")
 		log.Fatal(err)
