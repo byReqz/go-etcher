@@ -132,6 +132,11 @@ func main() {
 	s.Suffix = " ]  Getting file details"
 	s.Start()
 	statinput, err := os.Stat(input)
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
+		log.Fatal(err)
+	}
 	statdevice, err := os.Stat(device)
 	if err != nil {
 		s.Stop()
@@ -146,18 +151,34 @@ func main() {
 	s.Suffix = " ]  Opening files"
 	s.Start()
 	image, err := os.Open(input)
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		log.Fatal(err)
+	}
 	var inputsize int64
+	var inputisblock bool
 	if statinput.Size() != 0 {
 		inputsize = statinput.Size()
+		inputisblock = false
 	} else {
 		inputsize, err = image.Seek(0, io.SeekEnd)
+		inputisblock = true
 	}
 	target, err := os.OpenFile(device, os.O_RDWR, 0660)
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		log.Fatal(err)
+	}
 	var targetsize int64
+	var targetisblock bool
 	if statdevice.Size() != 0 {
 		targetsize = statdevice.Size()
+		targetisblock = false
 	} else {
 		targetsize, err = target.Seek(0, io.SeekEnd)
+		targetisblock = true
 	}
 	if err != nil {
 		s.Stop()
@@ -169,8 +190,20 @@ func main() {
 	}
 	inputmb := fmt.Sprint("[", inputsize / 1024 / 1024, "MB]")
 	devicemb := fmt.Sprint("[", targetsize / 1024 / 1024, "MB]")
-	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb)
-	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb)
+	var inputblock string
+	var targetblock string
+	if inputisblock == true {
+		inputblock = "[Blockdevice]"
+	} else {
+		inputblock = "[File]"
+	}
+	if targetisblock == true {
+		targetblock = "[Blockdevice]"
+	} else {
+		targetblock = "[File]"
+	}
+	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb, inputblock)
+	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb, targetblock)
 	if statinput.Size() > statdevice.Size() {
 		fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
 	}
