@@ -6,6 +6,8 @@ import (
 	"time"
 	"log"
 	"strings"
+	"runtime"
+	"strconv"
 	"github.com/schollz/progressbar/v3"
 	"github.com/fatih/color"
 	"github.com/briandowns/spinner"
@@ -45,6 +47,7 @@ func GetPath() string {
 }
 
 func GetDest() string {
+	PrintAvail()
 	dest, err := ac.Read("[ " + color.YellowString("i") + " ]  Please input destination: ")
 	if err != nil {
 		log.Fatal(err)
@@ -103,6 +106,43 @@ func Sync(image *os.File, target *os.File) error {
 		return err
 	}
 	return nil
+}
+
+func PrintAvail() {
+	if runtime.GOOS == "linux" {
+		block, _ := os.ReadDir("/sys/block")
+		if len(block) == 0 {
+			return
+		}
+		var targets []string
+		for _, device := range block {
+			if strings.HasPrefix(device.Name(), "sd") {
+				targets = append(targets, device.Name())
+			}
+			if strings.HasPrefix(device.Name(), "nvme") {
+				targets = append(targets, device.Name())
+			}
+			if strings.HasPrefix(device.Name(), "vd") {
+				targets = append(targets, device.Name())
+			}
+		}
+		for _, target := range targets {
+			sizefile, _ := os.Open("/sys/block/" + target + "/size")
+			sizeread, _ := io.ReadAll(sizefile)
+			_ = sizefile.Close()
+			sizestring := strings.ReplaceAll(string(sizeread), "\n", "")
+			size, _ := strconv.Atoi(sizestring)
+			size = size * 512
+			size = size / 1024 / 1024 / 1024
+
+			fmt.Print("     * ", "/dev/" + target)
+			if size > 0 {
+				fmt.Print(" [", size, "GB]\n")
+			} else {
+				fmt.Println("")
+			}
+		}
+	}
 }
 
 func main() {
