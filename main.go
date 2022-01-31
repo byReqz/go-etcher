@@ -244,7 +244,7 @@ func main() {
 	}
 	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb, inputblock)
 	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb, targetblock)
-	if statinput.Size() > statdevice.Size() {
+	if inputsize > targetsize {
 		fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
 	}
 	fmt.Print(color.HiWhiteString("Do you want to continue? [y/N]: "))
