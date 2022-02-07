@@ -126,6 +126,7 @@ func PrintAvail() {
 				targets = append(targets, device.Name())
 			}
 		}
+		fmt.Println("Available devices:")
 		for _, target := range targets {
 			sizefile, _ := os.Open("/sys/block/" + target + "/size")
 			sizeread, _ := io.ReadAll(sizefile)
