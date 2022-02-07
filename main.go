@@ -239,17 +239,18 @@ func main() {
 	}
 	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb, inputblock)
 	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb, targetblock)
-	if inputsize > targetsize {
-		fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
+	if force == false {
+		if inputsize > targetsize {
+			fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
+		}
+		fmt.Print(color.HiWhiteString("Do you want to continue? [y/N]: "))
+		var yesno string
+		_, _ = fmt.Scanln(&yesno)
+		yesno = strings.TrimSpace(yesno)
+		if ! (yesno == "y" || yesno == "Y") {
+			log.Fatal("aborted")
+		}
 	}
-	fmt.Print(color.HiWhiteString("Do you want to continue? [y/N]: "))
-	var yesno string
-	_, _ = fmt.Scanln(&yesno)
-	yesno = strings.TrimSpace(yesno)
-	if ! (yesno == "y" || yesno == "Y") {
-		log.Fatal("aborted")
-	}
-
 	written, err := WriteImage(image, target, inputsize)
 	if err != nil {
 		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written                                                    ")
