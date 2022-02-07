@@ -182,18 +182,11 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
 		log.Fatal(err)
-	} else {
-		s.Stop()
-		fmt.Println("\r[", color.GreenString("✓"), "]  Getting file details                     ")
 	}
-
-	s.Prefix = "[ "
-	s.Suffix = " ]  Opening files"
-	s.Start()
 	image, err := os.Open(input)
 	if err != nil {
 		s.Stop()
-		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
 		log.Fatal(err)
 	}
 	var inputsize int64
@@ -209,7 +202,7 @@ func main() {
 	target, err := os.OpenFile(device, os.O_RDWR, 0660)
 	if err != nil {
 		s.Stop()
-		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
 		log.Fatal(err)
 	}
 	var targetsize int64
@@ -224,11 +217,11 @@ func main() {
 	}
 	if err != nil {
 		s.Stop()
-		fmt.Println("\r[", color.RedString("✘"), "]  Opening files                   ")
+		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
 		log.Fatal(err)
 	} else {
 		s.Stop()
-		fmt.Println("\r[", color.GreenString("✓"), "]  Opening files                 ")
+		fmt.Println("\r[", color.GreenString("✓"), "]  Getting file details                     ")
 	}
 	inputmb := fmt.Sprint("[", inputsize / 1024 / 1024, "MB]")
 	devicemb := fmt.Sprint("[", targetsize / 1024 / 1024, "MB]")
