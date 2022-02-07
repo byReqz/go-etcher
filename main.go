@@ -204,6 +204,7 @@ func main() {
 	} else {
 		inputsize, err = image.Seek(0, io.SeekEnd)
 		inputisblock = true
+		_, _ = image.Seek(0, 0)
 	}
 	target, err := os.OpenFile(device, os.O_RDWR, 0660)
 	if err != nil {
@@ -219,6 +220,7 @@ func main() {
 	} else {
 		targetsize, err = target.Seek(0, io.SeekEnd)
 		targetisblock = true
+		_, _ = target.Seek(0, 0)
 	}
 	if err != nil {
 		s.Stop()
