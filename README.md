@@ -12,6 +12,7 @@ arguments:
   -d, --device string   target device
   -f, --force           override safety features
   -i, --input string    input file
+  -n, --no-hash         disable hash verification
 ```
 
 If no image or device is specified, etcher will enter interactive mode and prompt for the missing parameters.

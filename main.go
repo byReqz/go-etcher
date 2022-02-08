@@ -8,6 +8,7 @@ import (
 	"strings"
 	"runtime"
 	"strconv"
+	"crypto/sha256"
 	"github.com/schollz/progressbar/v3"
 	"github.com/fatih/color"
 	"github.com/briandowns/spinner"
@@ -18,11 +19,13 @@ import (
 var device string
 var input string
 var force bool
+var disable_hash bool
 
 func init() {
 	flag.StringVarP(&device, "device", "d", "", "target device")
 	flag.StringVarP(&input, "input", "i", "", "input file")
 	flag.BoolVarP(&force, "force", "f", false, "override safety features")
+	flag.BoolVarP(&disable_hash, "no-hash", "n", false, "disable hash verification")
 	flag.Parse()
 }
 
@@ -86,26 +89,6 @@ func WriteImage(image *os.File, target *os.File, size int64) (int64, error) {
 		return 0, err
 	}
 	return written, err
-}
-
-func Sync(image *os.File, target *os.File) error {
-	err := image.Sync()
-	if err != nil {
-		return err
-	}
-	err = target.Sync()
-	if err != nil {
-		return err
-	}
-	err = image.Close()
-	if err != nil {
-		return err
-	}
-	err = target.Close()
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func PrintAvail() {
@@ -216,6 +199,17 @@ func main() {
 		targetisblock = true
 		_, _ = target.Seek(0, 0)
 	}
+	prehash := sha256.New()
+	if ! (force || disable_hash) {
+		if err != nil {
+			s.Stop()
+			fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
+			log.Fatal(err)
+		}
+
+		_, err = io.Copy(prehash, image)
+		_, _ = image.Seek(0, 0)
+	}
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
@@ -253,6 +247,7 @@ func main() {
 		}
 	}
 	written, err := WriteImage(image, target, inputsize)
+	_, _ = target.Seek(0, 0)
 	if err != nil {
 		fmt.Println("\r[", color.RedString("✘"), "]  Writing image,", written, "bytes written                                                    ")
 		log.Fatal(err)
@@ -263,7 +258,13 @@ func main() {
 	s.Prefix = "[ "
 	s.Suffix = " ]  Syncing"
 	s.Start()
-	err = Sync(image, target)
+	err = image.Sync()
+	if err != nil {
+		s.Stop()
+		fmt.Println("\r[", color.RedString("✘"), "]  Syncing                    ")
+		log.Fatal(err)
+	}
+	err = target.Sync()
 	if err != nil {
 		s.Stop()
 		fmt.Println("\r[", color.RedString("✘"), "]  Syncing                    ")
@@ -271,5 +272,30 @@ func main() {
 	} else {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Syncing                  ")
+	}
+	if ! (force || disable_hash) {
+		s.Prefix = "[ "
+		s.Suffix = " ]  Verifying"
+		s.Start()
+		posthash := sha256.New()
+		_, err = io.CopyN(posthash, target, inputsize)
+		presum := fmt.Sprintf("%x", prehash.Sum(nil))
+		postsum := fmt.Sprintf("%x", posthash.Sum(nil))
+		if err != nil || presum != postsum {
+			s.Stop()
+			fmt.Println("\r[", color.RedString("✘"), "]  Verifying                    ")
+			log.Fatal(err)
+		} else {
+			s.Stop()
+			fmt.Println("\r[", color.GreenString("✓"), "]  Verifying                  ")
+		}
+	}
+	err = image.Close()
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = target.Close()
+	if err != nil {
+		log.Fatal(err)
 	}
 }
