@@ -1,19 +1,20 @@
 package main
+
 import (
+	"crypto/sha256"
 	"fmt"
-	"os"
+	ac "github.com/JoaoDanielRufino/go-input-autocomplete"
+	"github.com/briandowns/spinner"
+	"github.com/fatih/color"
+	"github.com/schollz/progressbar/v3"
+	flag "github.com/spf13/pflag"
 	"io"
-	"time"
 	"log"
-	"strings"
+	"os"
 	"runtime"
 	"strconv"
-	"crypto/sha256"
-	"github.com/schollz/progressbar/v3"
-	"github.com/fatih/color"
-	"github.com/briandowns/spinner"
-	flag "github.com/spf13/pflag"
-	ac "github.com/JoaoDanielRufino/go-input-autocomplete"
+	"strings"
+	"time"
 )
 
 var device string
@@ -119,7 +120,7 @@ func PrintAvail() {
 			size = size * 512
 			size = size / 1024 / 1024 / 1024
 
-			fmt.Print("     * ", "/dev/" + target)
+			fmt.Print("     * ", "/dev/"+target)
 			if size > 0 {
 				fmt.Print(" [", size, "GB]\n")
 			} else {
@@ -146,7 +147,7 @@ func main() {
 		} else if len(flag.Args()) > 0 {
 			if input == flag.Args()[0] && len(flag.Args()) > 1 {
 				device = flag.Args()[1]
-			}	else if input != flag.Args()[0] && len(flag.Args()) > 0 {
+			} else if input != flag.Args()[0] && len(flag.Args()) > 0 {
 				device = flag.Args()[0]
 			}
 		}
@@ -200,7 +201,7 @@ func main() {
 		_, _ = target.Seek(0, 0)
 	}
 	prehash := sha256.New()
-	if ! (force || disable_hash) {
+	if !(force || disable_hash) {
 		if err != nil {
 			s.Stop()
 			fmt.Println("\r[", color.RedString("✘"), "]  Getting file details                     ")
@@ -218,8 +219,8 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Getting file details                     ")
 	}
-	inputmb := fmt.Sprint("[", inputsize / 1024 / 1024, "MB]")
-	devicemb := fmt.Sprint("[", targetsize / 1024 / 1024, "MB]")
+	inputmb := fmt.Sprint("[", inputsize/1024/1024, "MB]")
+	devicemb := fmt.Sprint("[", targetsize/1024/1024, "MB]")
 	var inputblock string
 	var targetblock string
 	if inputisblock == true {
@@ -232,8 +233,8 @@ func main() {
 	} else {
 		targetblock = "[File]"
 	}
-	fmt.Println("[", color.BlueString("i"), "]  Input device/file: " + input, inputmb, inputblock)
-	fmt.Println("[", color.BlueString("i"), "]  Output device/file: " + device, devicemb, targetblock)
+	fmt.Println("[", color.BlueString("i"), "]  Input device/file: "+input, inputmb, inputblock)
+	fmt.Println("[", color.BlueString("i"), "]  Output device/file: "+device, devicemb, targetblock)
 	if force == false {
 		if inputsize > targetsize {
 			fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
@@ -242,7 +243,7 @@ func main() {
 		var yesno string
 		_, _ = fmt.Scanln(&yesno)
 		yesno = strings.TrimSpace(yesno)
-		if ! (yesno == "y" || yesno == "Y") {
+		if !(yesno == "y" || yesno == "Y") {
 			log.Fatal("aborted")
 		}
 	}
@@ -273,7 +274,7 @@ func main() {
 		s.Stop()
 		fmt.Println("\r[", color.GreenString("✓"), "]  Syncing                  ")
 	}
-	if ! (force || disable_hash) {
+	if !(force || disable_hash) {
 		s.Prefix = "[ "
 		s.Suffix = " ]  Verifying"
 		s.Start()
