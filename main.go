@@ -180,7 +180,7 @@ func main() {
 		inputsize = statinput.Size()
 		inputisblock = false
 	} else {
-		inputsize, err = image.Seek(0, io.SeekEnd)
+		inputsize, _ = image.Seek(0, io.SeekEnd)
 		inputisblock = true
 		_, _ = image.Seek(0, 0)
 	}
@@ -223,19 +223,19 @@ func main() {
 	devicemb := fmt.Sprint("[", targetsize/1024/1024, "MB]")
 	var inputblock string
 	var targetblock string
-	if inputisblock == true {
+	if inputisblock {
 		inputblock = "[Blockdevice]"
 	} else {
 		inputblock = "[File]"
 	}
-	if targetisblock == true {
+	if targetisblock {
 		targetblock = "[Blockdevice]"
 	} else {
 		targetblock = "[File]"
 	}
 	fmt.Println("[", color.BlueString("i"), "]  Input device/file: "+input, inputmb, inputblock)
 	fmt.Println("[", color.BlueString("i"), "]  Output device/file: "+device, devicemb, targetblock)
-	if force == false {
+	if !force {
 		if inputsize > targetsize {
 			fmt.Println("[", color.RedString("w"), "]", color.RedString(" Warning:"), "Input file seems to be bigger than the destination!")
 		}
